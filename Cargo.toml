@@ -14,6 +14,7 @@ name = "zero2prod"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+serde-aux = "4"
 actix-web = "4"
 reqwest = "0.11"
 serde = { version = "1", features = ["derive"] }
