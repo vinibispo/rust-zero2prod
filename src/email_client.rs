@@ -7,7 +7,7 @@ pub struct EmailClient {
     http_client: Client,
     base_url: String,
     sender: SubscriberEmail,
-    authorization_token: Secret<String>
+    authorization_token: Secret<String>,
 }
 
 impl EmailClient {
@@ -17,10 +17,7 @@ impl EmailClient {
         authorization_token: Secret<String>,
         timeout: std::time::Duration,
     ) -> Self {
-        let http_client = Client::builder()
-            .timeout(timeout)
-            .build()
-            .unwrap();
+        let http_client = Client::builder().timeout(timeout).build().unwrap();
         Self {
             http_client,
             base_url,
@@ -33,7 +30,7 @@ impl EmailClient {
         recipient: SubscriberEmail,
         subject: &str,
         html_content: &str,
-        text_content: &str
+        text_content: &str,
     ) -> Result<(), reqwest::Error> {
         let url = format!("{}/email", self.base_url);
         let request_body = SendEmailRequest {
@@ -44,13 +41,12 @@ impl EmailClient {
             text_body: text_content,
         };
 
-        self
-            .http_client
+        self.http_client
             .post(&url)
             .header(
                 "X-Postmark-Server-Token",
-                self.authorization_token.expose_secret()
-                )
+                self.authorization_token.expose_secret(),
+            )
             .json(&request_body)
             .send()
             .await?
@@ -74,6 +70,7 @@ mod tests {
     use claims::{assert_err, assert_ok};
     use wiremock::Request;
 
+    use super::EmailClient;
     use crate::domain::SubscriberEmail;
     use fake::faker::internet::en::SafeEmail;
     use fake::faker::lorem::en::{Paragraph, Sentence};
@@ -81,7 +78,6 @@ mod tests {
     use secrecy::Secret;
     use wiremock::matchers::{any, header, header_exists, method, path};
     use wiremock::{Mock, MockServer, ResponseTemplate};
-    use super::EmailClient;
 
     struct SendEmailBodyMatcher;
 
@@ -137,7 +133,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let outcome = email_client.send_email(email(), &subject(), &content(), &content())
+        let outcome = email_client
+            .send_email(email(), &subject(), &content(), &content())
             .await;
 
         assert_ok!(outcome);
@@ -147,7 +144,6 @@ mod tests {
     async fn send_email_fails_if_the_server_returns_500() {
         let mock_server = MockServer::start().await;
         let email_client = email_client(mock_server.uri());
-
 
         Mock::given(any())
             .respond_with(ResponseTemplate::new(500))
@@ -167,8 +163,7 @@ mod tests {
         let mock_server = MockServer::start().await;
         let email_client = email_client(mock_server.uri());
 
-        let response = ResponseTemplate::new(200)
-            .set_delay(std::time::Duration::from_secs(180));
+        let response = ResponseTemplate::new(200).set_delay(std::time::Duration::from_secs(180));
 
         Mock::given(any())
             .respond_with(response)
@@ -177,7 +172,7 @@ mod tests {
             .await;
 
         let outcome = email_client
-            .send_email(email(), &subject() ,&content(), &content())
+            .send_email(email(), &subject(), &content(), &content())
             .await;
 
         assert_err!(outcome);

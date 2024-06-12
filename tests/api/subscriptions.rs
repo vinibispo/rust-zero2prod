@@ -1,4 +1,4 @@
-use wiremock::{matchers::path, matchers::method, Mock, ResponseTemplate};
+use wiremock::{matchers::method, matchers::path, Mock, ResponseTemplate};
 
 use crate::helpers::spawn_app;
 
@@ -8,7 +8,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
 
-     Mock::given(path("/email"))
+    Mock::given(path("/email"))
         .and(method("POST"))
         .respond_with(ResponseTemplate::new(200))
         .mount(&app.email_server)
@@ -17,7 +17,6 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     let response = app.post_subscriptions(body.into()).await;
 
     assert_eq!(200, response.status().as_u16());
-
 }
 
 #[tokio::test]
@@ -26,7 +25,7 @@ async fn subscribe_persists_the_new_subscriber() {
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
 
-     Mock::given(path("/email"))
+    Mock::given(path("/email"))
         .and(method("POST"))
         .respond_with(ResponseTemplate::new(200))
         .mount(&app.email_server)
@@ -83,7 +82,6 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
             "The API did not return a 400 OK when the payload was {}.",
             description
         );
-
     }
 }
 
@@ -100,7 +98,6 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
         .await;
 
     app.post_subscriptions(body.into()).await;
-
 
     let email_request = &app.email_server.received_requests().await.unwrap()[0];
 
